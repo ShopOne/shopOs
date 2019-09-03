@@ -1,0 +1,60 @@
+#include"apifunc.h"
+void HariMain(){
+  char *buf;
+  int win,info;
+  api_initmalloc();
+  buf = api_malloc(160*100);
+  win = api_openwin(buf,160,100,-1,"lines");
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+  for(int i=0;i<100;i++)
+    api_putchar('a');
+  api_closewin(win);
+  api_end();
+}
