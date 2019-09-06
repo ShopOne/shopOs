@@ -30,14 +30,14 @@ CYLS    EQU     20
         DW      512             ; 1セクタの大きさ(512必須)
         DB      1               ; クラスタの大きさ、1必須
         DW      1               ; FATのスタート位置、普通1
-        DB      2               ; FATの個数、2必須 
+        DB      2               ; FATの個数、2必須
         DW      224             ; ルートディレクトリ領域の大きさ、普通224
         DW      2880            ; ルートディレクトリの大きさ、普通224
         DB      0xf0            ; メディアタイプ、これ必須
         DW      9               ; FATの長さ、これ必須
         DD      0               ; パーティション使わないなら0
         DD      2880            ; ドライブの数もう一度
-        DB      0, 0, 0x29      
+        DB      0, 0, 0x29
         DD      0xffffffff
         DB      "HELLO-OS   "   ; ディスク名
         DB      "FAT12   "      ; フォーマット
@@ -45,6 +45,8 @@ CYLS    EQU     20
 
 
     ;main program
+
+
 
 
 entry:
@@ -165,6 +167,6 @@ next:
 .ret:
     RET
 
-    RESB   0x7dfe-0x7c00-($-$$)
+    TIMES   0x7dfe-0x7c00-($-$$) DB 0
 
     DB    0x55, 0xaa

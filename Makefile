@@ -5,10 +5,7 @@ API_SRC  = $(wildcard ./api/*.asm)
 HARI_PACK = graphic.c template_func.c dsctbl.c fifo.c  bootpack.c nasmfunc.c memory.c console.c file.c window.c mtask.c mouse.c keyboard.c sheet.c timer.c int.c
 HARI_SRC = $(addprefix $(HARI_PATH),$(HARI_PACK))
 HARI_OBJ = $(HARI_SRC:.c=.o)
-
 API_OBJ = $(API_SRC:.asm=.o)
-
-
 
 default :
 	make img
@@ -55,12 +52,12 @@ bootpack.hrb : $(HARI_OBJ) hankaku.c mysprintf.c har.ld $(HARI_PATH)nasmfunc.o M
 haribote.sys : asmhead.bin bootpack.hrb  Makefile
 	cat asmhead.bin bootpack.hrb > haribote.sys
 
-
 haribote.img : ipl10.bin haribote.sys nihongo.fnt typeipl.hrb cat.hrb lines.hrb chklang.hrb ipl10.asm euc.txt calc.hrb notrec.hrb bball.hrb invad.hrb Makefile
+	mcopy fs_img.out -i $@ ::
 	mformat -f 1440 -C -B $< -i $@ ::
 	mcopy haribote.sys -i $@ ::
-	mcopy Makefile -i $@ ::
 	mcopy ipl10.bin -i $@ ::
+	mcopy Makefile -i $@ ::
 	mcopy cat.hrb -i $@ ::
 	mcopy lines.hrb -i $@ ::
 	mcopy nihongo.fnt -i $@ ::

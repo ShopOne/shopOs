@@ -210,6 +210,10 @@ typedef struct {
   unsigned int size;
 }FILEINFO;
 
+typedef struct{
+  int size,addr;
+  unsigned char name[24];
+}FS_FILEINFO;
 struct CONSOLE{
   SHEET *sht;
   int cur_x,cur_y,cur_c;
