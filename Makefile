@@ -55,22 +55,11 @@ bootpack.hrb : $(HARI_OBJ) hankaku.c mysprintf.c har.ld $(HARI_PATH)nasmfunc.o M
 haribote.sys : asmhead.bin bootpack.hrb  Makefile
 	cat asmhead.bin bootpack.hrb > haribote.sys
 
-haribote.img : ipl10.bin haribote.sys nihongo.fnt typeipl.hrb cat.hrb lines.hrb chklang.hrb ipl10.asm euc.txt calc.hrb notrec.hrb bball.hrb invad.hrb Makefile
-	mformat -f 1440 -C -B $< -i $@ ::
-	mcopy haribote.sys -i $@ ::
-	mcopy ipl10.bin -i $@ ::
-	mcopy fs_img.out -i $@ ::
-	mcopy Makefile -i $@ ::
-	mcopy cat.hrb -i $@ ::
-	mcopy lines.hrb -i $@ ::
-	mcopy nihongo.fnt -i $@ ::
-	mcopy bball.hrb -i $@ ::
-	mcopy notrec.hrb -i $@ ::
-	mcopy chklang.hrb -i $@ ::
-	mcopy ipl10.asm -i $@ ::
-	mcopy invad.hrb -i $@ ::
-	mcopy calc.hrb -i $@ ::
-	mcopy euc.txt -i $@ ::
+fs_img.out: fs_img.c
+	gcc fs_img.c -o fs_img.out
+
+haribote.img : ipl10.bin haribote.sys fs_img.out
+	./fs_img.out haribote.img ipl10.bin haribote.sys
 
 
 asm :

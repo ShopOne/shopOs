@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     int i, j;
     struct FS_FILEINFO *myfs = (struct FS_FILEINFO *) (img + 0x000200);
 
-    if (argc < 4) { return 1; /* エラー終了 */ }
+    if (argc < 4) {printf("err\n"); return 1; /* エラー終了 */ }
 
     /* IPL読み込み */
     fp = fopen(argv[2], "rb");

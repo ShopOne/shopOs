@@ -18,7 +18,7 @@ SCRNX   EQU       0x0ff4 ; 解像度x
 SCRNY   EQU       0x0ff6 ; 解像度y
 VRAM    EQU       0x0ff8 ; グラフィックバッファの開始位置
 
-        ORG       0xc200   ; このプログラムがどこに読み込まれるのか
+        ORG       0xa400   ; このプログラムがどこに読み込まれるのか
 
 ; VBE確認
         MOV       AX, 0x9000

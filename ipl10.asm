@@ -19,7 +19,7 @@
 ;   SI ソース(よみこみ)インデックス
 ;   DI デスティネーション(書き込み)インデックス
 
-CYLS    EQU     20
+CYLS    EQU     15
 
         ORG     0x7c00          ; このプログラムがどこに読み込まれるか
 
@@ -30,19 +30,6 @@ CYLS    EQU     20
         DW      512             ; 1セクタの大きさ(512必須)
         DB      1               ; クラスタの大きさ、1必須
         DW      1               ; FATのスタート位置、普通1
-        DB      2               ; FATの個数、2必須
-        DW      224             ; ルートディレクトリ領域の大きさ、普通224
-        DW      2880            ; ルートディレクトリの大きさ、普通224
-        DB      0xf0            ; メディアタイプ、これ必須
-        DW      9               ; FATの長さ、これ必須
-        DD      0               ; パーティション使わないなら0
-        DD      2880            ; ドライブの数もう一度
-        DB      0, 0, 0x29
-        DD      0xffffffff
-        DB      "HELLO-OS   "   ; ディスク名
-        DB      "FAT12   "      ; フォーマット
-        TIMES    18      DB 0
-
 
     ;main program
 
@@ -68,7 +55,7 @@ entry:
 ; 読み終わったのでharibote.sysを実行だ！
 
     MOV    BYTE [0x0ff0],CYLS  ; IPLがどこまで読んだのかをメモ
-    JMP    0xc200
+    JMP    0xa400
 
 error:
     MOV    AX,0
