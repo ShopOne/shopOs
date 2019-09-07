@@ -41,7 +41,7 @@ CYLS    EQU     20
         DD      0xffffffff
         DB      "HELLO-OS   "   ; ディスク名
         DB      "FAT12   "      ; フォーマット
-        RESB    18
+        TIMES    18      DB 0
 
 
     ;main program
