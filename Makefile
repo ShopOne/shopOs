@@ -30,6 +30,9 @@ $(HARI_PATH)%.o: $(HARI_PATH)%.c Makefile
 $(API_PATH)%.o: %.c Makefile 
 	$(CC) -fno-pic -march=i486 -m32  -nostdlib $< -c  -o $@
 
+$fs_img.out: fs_img.c Makefile 
+	$(CC) -fno-pic -march=i486 -m32  -nostdlib $< -c  -o $@
+
 $(HARI_PATH)nasmfunc.o : $(HARI_PATH)nasmfunc.asm Makefile
 	nasm -g -f elf $(HARI_PATH)nasmfunc.asm -o $@
 
@@ -53,10 +56,10 @@ haribote.sys : asmhead.bin bootpack.hrb  Makefile
 	cat asmhead.bin bootpack.hrb > haribote.sys
 
 haribote.img : ipl10.bin haribote.sys nihongo.fnt typeipl.hrb cat.hrb lines.hrb chklang.hrb ipl10.asm euc.txt calc.hrb notrec.hrb bball.hrb invad.hrb Makefile
-	mcopy fs_img.out -i $@ ::
 	mformat -f 1440 -C -B $< -i $@ ::
 	mcopy haribote.sys -i $@ ::
 	mcopy ipl10.bin -i $@ ::
+	mcopy fs_img.out -i $@ ::
 	mcopy Makefile -i $@ ::
 	mcopy cat.hrb -i $@ ::
 	mcopy lines.hrb -i $@ ::
