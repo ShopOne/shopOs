@@ -49,7 +49,7 @@ apilib.a: $(API_OBJ) Makefile
 $(API_PATH)%.o: $(API_PATH)%.asm Makefile
 	nasm -f elf32 -o $@ $<
 
-bootpack.hrb : $(HARI_OBJ) hankaku.c mysprintf.c har.ld $(HARI_PATH)nasmfunc.o Makefile
+bootpack.hrb : $(HARI_OBJ) hankaku.c mysprintf.c har.ld $(HARI_PATH)nasmfunc.o $(HARI_PATH)bootpack.h Makefile
 	gcc -fno-pic -march=i486 -m32 -nostdlib -T har.ld -g hankaku.c mysprintf.c $(HARI_OBJ) -o bootpack.hrb
 
 haribote.sys : asmhead.bin bootpack.hrb  Makefile
@@ -58,8 +58,8 @@ haribote.sys : asmhead.bin bootpack.hrb  Makefile
 fs_img.out: fs_img.c
 	gcc fs_img.c -o fs_img.out
 
-haribote.img : ipl10.bin haribote.sys fs_img.out
-	./fs_img.out haribote.img ipl10.bin haribote.sys
+haribote.img : ipl10.bin haribote.sys fs_img.out euc.txt lines.hrb Makefile
+	./fs_img.out haribote.img ipl10.bin haribote.sys euc.txt lines.hrb
 
 
 asm :

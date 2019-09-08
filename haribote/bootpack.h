@@ -204,10 +204,8 @@ typedef struct{
   TASK tasks0[MAX_TASKS];
 }TASKCTL;
 typedef struct {
-  unsigned char name[8],ext[3],type;
-  char reserve[10];
-  unsigned short time,data,clustno;
-  unsigned int size;
+  int size,clustno;
+  unsigned char name[24];
 }FILEINFO;
 
 typedef struct{
@@ -351,7 +349,8 @@ int *inthandler0c(int *esp);
 //file 
 FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
 void file_readfat(int *fat,unsigned char *img);
-void file_loadfile(int clustno,int size,char *buf,int *fat,char *img);
+void file_loadfile(int clustno,int size,char *buf,char *img);
+char *file_loadfile2(int clustno, int *psize);
 //bootpack
 SHEET *open_console(SHTCTL *shtctl,unsigned int memtotal);
 TASK *open_constask(SHEET *sht,unsigned int memtotal);

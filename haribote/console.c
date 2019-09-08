@@ -96,27 +96,36 @@ int cmd_app(CONSOLE *cons,int *fat,char *cmdline){
   SHTCTL *shtctl;
   SHEET *sht;
   TASK *task = task_now();
-  char name[18],*p,*q;
-  int i,segsize,datsize,esp,dathrb;
-  for(i=0;i<13;i++){
+  char name[30],*p,*q;
+  int i,segsize,datsize,esp,dathrb,appsize;
+  for(i=0;i<24;i++){
     if(cmdline[i]<=' '){
       break;
     }
     name[i] = cmdline[i];
   }
   name[i]=0;
-  finfo = file_search(name,(FILEINFO*)(ADR_DISKIMG+0x002600),224);
+  finfo = file_search(name,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
   if(finfo==0&&name[i-1]!='.'){
     name[i+0] = '.';
     name[i+1] = 'H';
     name[i+2] = 'R';
     name[i+3] = 'B';
     name[i+4] =  0 ;
-  finfo = file_search(name,(FILEINFO*)(ADR_DISKIMG+0x002600),224);
+    finfo = file_search(name,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+    if(finfo==0){
+      name[i+1] = 'h';
+      name[i+2] = 'r';
+      name[i+3] = 'b';
+      finfo = file_search(name,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+    }
   }
   if(finfo!=0){
+    appsize =finfo->size;
     p = (char*)memman_alloc_4k(memman,finfo->size);
-    file_loadfile(finfo->clustno,finfo->size,p,fat,(char*)(ADR_DISKIMG+0x003e00));
+    file_loadfile2(finfo->clustno,&appsize);
+    cons_putstr0(cons,p);
+    cons_putstr0(cons,"nakami");
     if(finfo->size>=36&&strn_cmp(p+4,"Hari",4)==0&&*p==0x00){
       segsize = *((int*)(p+0x0000));
       esp     = *((int*)(p+0x000c));
@@ -266,36 +275,32 @@ void cmd_clean(CONSOLE *cons){
 }
 
 void cmd_ls(CONSOLE *cons){
-  FILEINFO *finfo = (FILEINFO*)(ADR_DISKIMG+0x002600);
-  int x;
-  char s[30];
-  for(x=0;x<224;x++){
-    if(finfo[x].name[0]==0x00){
+  FILEINFO *finfo = (FILEINFO*)(ADR_DISKIMG+0x000200);
+  char s[31];
+  for(int i=0;i<272;i++){
+    if(finfo[i].size==-1){
       break;
     }
-    if(finfo[x].name[0]!=0xe5){
-      if((finfo[x].type&0x18)==0){
-        my_sprintf(s,"filename.ext  %d\n",finfo[x].size);
-        for(int y=0;y<8;y++){
-          s[y] = finfo[x].name[y];
-        }
-        s[9]  = finfo[x].ext[0];
-        s[10] = finfo[x].ext[1];
-        s[11] = finfo[x].ext[2];
-        cons_putstr0(cons,s);
+    my_sprintf(s,"                        %d\n",finfo[i].size);
+    for(int j=0;j<24;j++){
+      if(finfo[i].name[j]==0){
+        break;
       }
+      s[j]=finfo[i].name[j];
     }
+    cons_putstr0(cons,s);
   }
   cons_newline(cons);
   return;
 }
 void cmd_cat(CONSOLE *cons,int *fat,char *cmdline){
-  FILEINFO *finfo = file_search(cmdline+4,(FILEINFO*)(ADR_DISKIMG+0x002600),224);
+  FILEINFO *finfo = finfo = file_search(cmdline+4,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   char *p;
   if(finfo!=0){
     p = (char*)memman_alloc_4k(memman,finfo->size);
-    file_loadfile(finfo->clustno,finfo->size,p,fat,(char*)(ADR_DISKIMG+0x003e00));
+    file_loadfile2(finfo->clustno,&finfo->size);
     cons_putstr1(cons,p,finfo->size);
     memman_free_4k(memman,(int)p,finfo->size);
   }else{
@@ -310,7 +315,7 @@ void cmd_hlt(CONSOLE *cons,int *fat){
   char *p;
   if(finfo!=0){
     p = (char*)memman_alloc_4k(memman,finfo->size);
-    file_loadfile(finfo->clustno,finfo->size,p,fat,(char*)(ADR_DISKIMG+0x003e00));
+    file_loadfile2(finfo->clustno,&finfo->size);
     set_segmdesc(gdt+1003,finfo->size-1,(int)p,AR_CODE32_ER);
     farcall(0,1003*8);
     memman_free_4k(memman,(int)p,finfo->size);
@@ -336,6 +341,8 @@ void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
     cmd_ncst(cons,cmdline,memtotal);
   }else if(strn_cmp(cmdline,"langmode ",9)==0){
     cmd_langmode(cons,cmdline);
+  }else if(strn_cmp(cmdline,"cat ",4)==0){
+    cmd_cat(cons,fat,cmdline);
   }else if(cmdline[0]!=0){
     if(cmd_app(cons,fat,cmdline)==0){
       cons_putstr0(cons,"No such commands :-D");
@@ -513,8 +520,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
          fh->buf = (char*)memman_alloc_4k(memman,finfo->size);
          fh->size = finfo->size;
          fh->pos = 0;
-         file_loadfile(finfo->clustno,finfo->size,fh->buf,task->fat,
-             (char*)(ADR_DISKIMG+0x003e00));
+         file_loadfile2(finfo->clustno,&finfo->size);
        }
      }
      break;
@@ -594,6 +600,12 @@ void console_task(SHEET *sheet,unsigned int memtotal){
   cons.cur_c=-1;
   task->cons = &cons;
   task->cmdline = cmdline;
+  if(cons.sht!=0){
+    cons.timer = timer_alloc();
+    timer_init(cons.timer, &task->fifo,0);
+    timer_settime(cons.timer,50);
+  }
+
   for(int i=0;i<8;i++){
     fhandle[i].buf=0;
   }
@@ -606,12 +618,6 @@ void console_task(SHEET *sheet,unsigned int memtotal){
   task->fhandle = fhandle;
   task->fat = fat;
 
-  if(cons.sht!=0){
-    cons.timer = timer_alloc();
-    timer_init(cons.timer, &task->fifo,0);
-    timer_settime(cons.timer,50);
-  }
-  file_readfat(fat,(unsigned char *)(ADR_DISKIMG+0x000200));
   cons_putchar(&cons,'>',1);
 
   while(1){
