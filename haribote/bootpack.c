@@ -2,7 +2,7 @@
 #define MOUSE_MV_RATE 1
 #define MAX_MOUSE_MOVE 10
 #define KEYCMD_LED 0xed
-TASK *open_constask( SHEET *sht, unsigned int memtotal){
+TASK *open_constask(SHEET *sht, unsigned int memtotal){
   MEMMAN *memman = ( MEMMAN *) MEMMAN_ADDR;
   TASK *task = task_alloc();
   int *cons_fifo = (int *) memman_alloc_4k(memman, 128 * 4);
@@ -22,8 +22,8 @@ TASK *open_constask( SHEET *sht, unsigned int memtotal){
   return task;
 }
 
-SHEET *open_console( SHTCTL *shtctl, unsigned int memtotal){
-  MEMMAN *memman = ( MEMMAN *) MEMMAN_ADDR;
+SHEET *open_console(SHTCTL *shtctl, unsigned int memtotal){
+  MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
   SHEET *sht = sheet_alloc(shtctl);
   unsigned char *buf = (unsigned char *) memman_alloc_4k(memman, 256 * 165);
   sheet_setbuf(sht, buf, 256, 165, -1); /* 透明色なし */

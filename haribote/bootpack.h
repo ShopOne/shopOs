@@ -5,6 +5,7 @@ int min(int a,int b);
 int abs(int a);
 int strcmp(const char* s,const char *t);
 int strn_cmp(const char* s,const char *t,int size);
+int str_len(const char* s);
 //keyboard.c
 #define PORT_KEYDAT 0x0060
 #define PORT_KEYSTA 0x0064
@@ -216,6 +217,8 @@ struct CONSOLE{
   SHEET *sht;
   int cur_x,cur_y,cur_c;
   TIMER *timer;
+  char *cur_dir;
+  unsigned int curdir_nsize;
 };
 
 // global

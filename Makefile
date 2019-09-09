@@ -1,7 +1,7 @@
 #ファイル生成規則
-API_PATH = ./api/
-HARI_PATH = ./haribote/
-HRB_PATH = ./hrbapp/
+API_PATH = api/
+HARI_PATH = haribote/
+HRB_PATH = hrbapp/
 API_SRC  = $(wildcard ./api/*.asm)
 HARI_PACK = graphic.c template_func.c dsctbl.c fifo.c  bootpack.c nasmfunc.c memory.c console.c file.c window.c mtask.c mouse.c keyboard.c sheet.c timer.c int.c
 HARI_SRC = $(addprefix $(HARI_PATH),$(HARI_PACK))

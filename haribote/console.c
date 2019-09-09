@@ -90,6 +90,10 @@ void cons_newline(CONSOLE *cons){
   }
   return;
 }
+void cmd_pwd(CONSOLE *cons){
+  cons_putstr0(cons,cons->cur_dir);
+  cons_newline(cons);
+}
 int cmd_app(CONSOLE *cons,int *fat,char *cmdline){
   MEMMAN *memman = (MEMMAN*)MEMMAN_ADDR;
   FILEINFO *finfo;
@@ -124,6 +128,7 @@ int cmd_app(CONSOLE *cons,int *fat,char *cmdline){
     appsize =finfo->size;
     p = (char*)memman_alloc_4k(memman,finfo->size);
     p = file_loadfile2(finfo->clustno,&appsize);
+    appsize =finfo->size;
     if(finfo->size>=36&&strn_cmp(p+4,"Hari",4)==0&&*p==0x00){
       segsize = *((int*)(p+0x0000));
       esp     = *((int*)(p+0x000c));
@@ -184,6 +189,19 @@ void cmd_start(CONSOLE *cons,char *cmdline,int memtotal){
   fifo32_put(fifo,10+256);
   cons_newline(cons);
   return;
+}
+void cmd_cln(CONSOLE *cons){
+  FILEINFO *finfo = file_search("euc.txt",(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+  MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
+  char *p;
+  if(finfo!=0){
+    p = (char*)memman_alloc_4k(memman,finfo->size);
+    file_loadfile2(finfo->clustno,&finfo->size);
+    for(int i=0;i<finfo->size;i++){
+      p[i]=' ';
+      memman_free_4k(memman,(int)p,finfo->size);
+    }
+  }
 }
 void cmd_exit(CONSOLE *cons,int *fat){
   MEMMAN *memman = (MEMMAN*)MEMMAN_ADDR;
@@ -307,6 +325,29 @@ void cmd_hlt(CONSOLE *cons,int *fat){
   }
   cons_newline(cons);
 }
+void cmd_cat(CONSOLE *cons,int *fat,char *cmdline){
+  FILEINFO *finfo = file_search(cmdline+4,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+  MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
+  char *p;
+  if(finfo!=0){
+    p = (char*)memman_alloc_4k(memman,finfo->size);
+    p = file_loadfile2(finfo->clustno,&finfo->size);
+    cons_putstr1(cons,p,finfo->size);
+    memman_free_4k(memman,(int)p,finfo->size);
+  }else{
+    cons_putstr0(cons,"File not Found :-P\n");
+  }
+  cons_newline(cons);
+}
+void cmd_cd(CONSOLE *cons,char *cmdline){
+  char *next_dir = cmdline+3;
+  if(next_dir[0]=='/'){
+    next_dir++;
+    cons->cur_dir=next_dir;
+    cons->curdir_nsize = str_len(next_dir);
+  }else{
+  }
+}
 void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
   if(strcmp(cmdline,"free")==0&&cons->sht!=0){
     cmd_free(cons,memtotal);
@@ -324,6 +365,14 @@ void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
     cmd_ncst(cons,cmdline,memtotal);
   }else if(strn_cmp(cmdline,"langmode ",9)==0){
     cmd_langmode(cons,cmdline);
+  }else if(strcmp(cmdline,"pwd")==0){
+    cmd_pwd(cons);
+  }else if(strcmp(cmdline,"cln")==0){
+    cmd_cln(cons);
+  }else if(strn_cmp(cmdline,"cat ",4)==0){
+    cmd_cat(cons,fat,cmdline);
+  }else if(strn_cmp(cmdline,"cd ",3)==0){
+    cmd_cd(cons,cmdline);
   }else if(cmdline[0]!=0){
     if(cmd_app(cons,fat,cmdline)==0){
       cons_putstr0(cons,"No such commands :-D");
@@ -579,6 +628,10 @@ void console_task(SHEET *sheet,unsigned int memtotal){
   cons.cur_x=8;
   cons.cur_y=28;
   cons.cur_c=-1;
+  cons.cur_dir = (char*)memman_alloc_4k(memman,30);
+  cons.cur_dir[0]='/';
+  cons.cur_dir[1]=0;
+  cons.curdir_nsize=1;
   task->cons = &cons;
   task->cmdline = cmdline;
   if(cons.sht!=0){
