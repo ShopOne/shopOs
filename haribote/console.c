@@ -123,9 +123,7 @@ int cmd_app(CONSOLE *cons,int *fat,char *cmdline){
   if(finfo!=0){
     appsize =finfo->size;
     p = (char*)memman_alloc_4k(memman,finfo->size);
-    file_loadfile2(finfo->clustno,&appsize);
-    cons_putstr0(cons,p);
-    cons_putstr0(cons,"nakami");
+    p = file_loadfile2(finfo->clustno,&appsize);
     if(finfo->size>=36&&strn_cmp(p+4,"Hari",4)==0&&*p==0x00){
       segsize = *((int*)(p+0x0000));
       esp     = *((int*)(p+0x000c));
@@ -293,21 +291,6 @@ void cmd_ls(CONSOLE *cons){
   cons_newline(cons);
   return;
 }
-void cmd_cat(CONSOLE *cons,int *fat,char *cmdline){
-  FILEINFO *finfo = finfo = file_search(cmdline+4,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
-
-  MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
-  char *p;
-  if(finfo!=0){
-    p = (char*)memman_alloc_4k(memman,finfo->size);
-    file_loadfile2(finfo->clustno,&finfo->size);
-    cons_putstr1(cons,p,finfo->size);
-    memman_free_4k(memman,(int)p,finfo->size);
-  }else{
-    cons_putstr0(cons,"File not Found :-P\n");
-  }
-  cons_newline(cons);
-}
 void cmd_hlt(CONSOLE *cons,int *fat){
   FILEINFO *finfo = file_search("HLT.HRB",(FILEINFO*)(ADR_DISKIMG+0x002600),224);
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
@@ -341,8 +324,6 @@ void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
     cmd_ncst(cons,cmdline,memtotal);
   }else if(strn_cmp(cmdline,"langmode ",9)==0){
     cmd_langmode(cons,cmdline);
-  }else if(strn_cmp(cmdline,"cat ",4)==0){
-    cmd_cat(cons,fat,cmdline);
   }else if(cmdline[0]!=0){
     if(cmd_app(cons,fat,cmdline)==0){
       cons_putstr0(cons,"No such commands :-D");

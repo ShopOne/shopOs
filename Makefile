@@ -1,11 +1,14 @@
 #ファイル生成規則
 API_PATH = ./api/
 HARI_PATH = ./haribote/
+HRB_PATH = ./hrbapp/
 API_SRC  = $(wildcard ./api/*.asm)
 HARI_PACK = graphic.c template_func.c dsctbl.c fifo.c  bootpack.c nasmfunc.c memory.c console.c file.c window.c mtask.c mouse.c keyboard.c sheet.c timer.c int.c
 HARI_SRC = $(addprefix $(HARI_PATH),$(HARI_PACK))
 HARI_OBJ = $(HARI_SRC:.c=.o)
 API_OBJ = $(API_SRC:.asm=.o)
+HRB_PACK = typeipl.hrb lines.hrb cat.hrb chklang.hrb notrec.hrb invad.hrb
+HRB_APPS = $(addprefix $(HRB_PATH),$(HRB_PACK))
 
 default :
 	make img
@@ -40,7 +43,7 @@ apilib.a: $(API_OBJ) Makefile
 	ar r apilib.a $(API_OBJ)
 	ar q apilib.a $(API_PATH)bmp.obj
 
-%.hrb :$(API_PATH)%.o apilib.a Makefile 
+$(HRB_PATH)%.hrb :$(API_PATH)%.o apilib.a Makefile 
 	ld -m elf_i386 -e HariMain -o $@ -Tapi.ls $<  apilib.a
 
 %.o: %.asm Makefile
@@ -58,8 +61,8 @@ haribote.sys : asmhead.bin bootpack.hrb  Makefile
 fs_img.out: fs_img.c
 	gcc fs_img.c -o fs_img.out
 
-haribote.img : ipl10.bin haribote.sys fs_img.out euc.txt lines.hrb Makefile
-	./fs_img.out haribote.img ipl10.bin haribote.sys euc.txt lines.hrb
+haribote.img : ipl10.bin haribote.sys fs_img.out euc.txt $(HRB_APPS) Makefile
+	./fs_img.out haribote.img ipl10.bin haribote.sys euc.txt $(HRB_APPS)
 
 
 asm :
@@ -77,5 +80,6 @@ debug :
 	qemu-system-i386 -fda  haribote.img -gdb tcp::10000 -S 
 
 clean :
-	rm *.lst *.bin *.sys *.img *.hrb *.a ./api/*.o ./haribote/*.o
+	rm *.lst *.bin *.sys *.img *.hrb *.a ./api/*.o ./haribote/*.o \
+	./hrbapp/*.hrb
 
