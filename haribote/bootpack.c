@@ -3,7 +3,7 @@
 #define MAX_MOUSE_MOVE 10
 #define KEYCMD_LED 0xed
 TASK *open_constask(SHEET *sht, unsigned int memtotal){
-  MEMMAN *memman = ( MEMMAN *) MEMMAN_ADDR;
+  MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
   TASK *task = task_alloc();
   int *cons_fifo = (int *) memman_alloc_4k(memman, 128 * 4);
   task->cons_stack = memman_alloc_4k(memman, 64 * 1024);
@@ -85,6 +85,7 @@ void HariMain(void){
   extern char hankaku[4096];
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   int x,y;
+  DIRINFO *homedir;
   static char keytable0[0x80] = {
     0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0x08,   0,
     'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0x0a,   0,   'A', 'S',
@@ -172,6 +173,14 @@ void HariMain(void){
   }
   *((int*)0x0fe8) = (int)nihongo;
   memman_free_4k(memman,(int)fat,4*2880);
+
+  homedir->parentdir=homedir;
+  homedir->curdir=homedir;
+  homedir->nextdir=0;
+  homedir->name[0]='/';
+  homedir->name[1]=0;
+  homedir->nextfile=0;
+  *((int*)HOMEDIR_ADDR) = (int)homedir;
 
   fifo32_put(&keycmd,KEYCMD_LED);
   fifo32_put(&keycmd,key_leds);

@@ -71,8 +71,11 @@ asm :
 img :
 	make -r haribote.img
 
-run :
+newrun :
 	make img
+	qemu-system-i386 -fda haribote.img
+
+run :
 	qemu-system-i386 -fda haribote.img
 
 debug :

@@ -88,6 +88,9 @@ int str_len(const char* s);
 #define TASK_GDT0   3
 #define MAX_TASK_LV 100
 #define MAX_TASKLEVELS 10
+
+
+#define HOMEDIR_ADDR 0x0fac
 // structs
 typedef struct {
   short limit_low, base_low;
@@ -204,15 +207,23 @@ typedef struct{
   TASKLEVEL level[MAX_TASKLEVELS];
   TASK tasks0[MAX_TASKS];
 }TASKCTL;
-typedef struct {
+typedef struct FILEINFO FILEINFO;
+struct FILEINFO{
   int size,clustno;
   unsigned char name[24];
-}FILEINFO;
+  FILEINFO *nextfile;
+};
 
 typedef struct{
   int size,addr;
   unsigned char name[24];
 }FS_FILEINFO;
+typedef struct DIRINFO DIRINFO;
+struct DIRINFO{
+  DIRINFO *parentdir,*curdir,*nextdir;
+  FILEINFO *nextfile;
+  unsigned char name[24];
+};
 struct CONSOLE{
   SHEET *sht;
   int cur_x,cur_y,cur_c;
@@ -354,6 +365,7 @@ FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
 void file_readfat(int *fat,unsigned char *img);
 void file_loadfile(int clustno,int size,char *buf,char *img);
 char *file_loadfile2(int clustno, int *psize);
+void file_writefile2(int clustno, int *psize,char *buf);
 //bootpack
 SHEET *open_console(SHTCTL *shtctl,unsigned int memtotal);
 TASK *open_constask(SHEET *sht,unsigned int memtotal);

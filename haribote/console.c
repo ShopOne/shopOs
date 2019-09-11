@@ -195,12 +195,7 @@ void cmd_cln(CONSOLE *cons){
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   char *p;
   if(finfo!=0){
-    p = (char*)memman_alloc_4k(memman,finfo->size);
-    file_loadfile2(finfo->clustno,&finfo->size);
-    for(int i=0;i<finfo->size;i++){
-      p[i]=' ';
-      memman_free_4k(memman,(int)p,finfo->size);
-    }
+    file_writefile2(finfo->clustno,&finfo->size,"ahohooho");
   }
 }
 void cmd_exit(CONSOLE *cons,int *fat){
