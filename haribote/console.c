@@ -94,7 +94,7 @@ void cmd_pwd(CONSOLE *cons){
   cons_putstr0(cons,cons->cur_dir);
   cons_newline(cons);
 }
-int cmd_app(CONSOLE *cons,int *fat,char *cmdline){
+int cmd_app(CONSOLE *cons,char *cmdline){
   MEMMAN *memman = (MEMMAN*)MEMMAN_ADDR;
   FILEINFO *finfo;
   SHTCTL *shtctl;
@@ -196,9 +196,11 @@ void cmd_cln(CONSOLE *cons){
   char *p;
   if(finfo!=0){
     file_writefile2(finfo->clustno,&finfo->size,"ahohooho");
+  }else{
+    cons_putstr0(cons,"no_file");
   }
 }
-void cmd_exit(CONSOLE *cons,int *fat){
+void cmd_exit(CONSOLE *cons){
   MEMMAN *memman = (MEMMAN*)MEMMAN_ADDR;
   TASK *task = task_now();
   SHTCTL *shtctl = (SHTCTL*)*((int*)0x0fe4);
@@ -206,7 +208,6 @@ void cmd_exit(CONSOLE *cons,int *fat){
   if(cons->sht!=0){
     timer_cancel(cons->timer);
   }
-  memman_free_4k(memman,(int)fat,4*2880);
   io_cli();
   if(cons->sht!=0){
     fifo32_put(fifo,cons->sht - shtctl->sheets0+768);
@@ -292,7 +293,7 @@ void cmd_ls(CONSOLE *cons){
     if(finfo[i].size==-1){
       break;
     }
-    my_sprintf(s,"                        %d\n",finfo[i].size);
+    my_sprintf(s, "                      %d\n", finfo[i].size);
     for(int j=0;j<24;j++){
       if(finfo[i].name[j]==0){
         break;
@@ -304,8 +305,8 @@ void cmd_ls(CONSOLE *cons){
   cons_newline(cons);
   return;
 }
-void cmd_hlt(CONSOLE *cons,int *fat){
-  FILEINFO *finfo = file_search("HLT.HRB",(FILEINFO*)(ADR_DISKIMG+0x002600),224);
+void cmd_hlt(CONSOLE *cons){
+  FILEINFO *finfo = file_search("HLT.HRB",(FILEINFO*)(ADR_DISKIMG+0x000200),272);
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   SEGMENT_DESCRIPTOR *gdt = (SEGMENT_DESCRIPTOR*)ADR_GDT;
   char *p;
@@ -320,7 +321,7 @@ void cmd_hlt(CONSOLE *cons,int *fat){
   }
   cons_newline(cons);
 }
-void cmd_cat(CONSOLE *cons,int *fat,char *cmdline){
+void cmd_cat(CONSOLE *cons,char *cmdline){
   FILEINFO *finfo = file_search(cmdline+4,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   char *p;
@@ -343,7 +344,7 @@ void cmd_cd(CONSOLE *cons,char *cmdline){
   }else{
   }
 }
-void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
+void cons_runcmd(CONSOLE *cons,char *cmdline,unsigned int memtotal){
   if(strcmp(cmdline,"free")==0&&cons->sht!=0){
     cmd_free(cons,memtotal);
   }else if(strcmp(cmdline,"clean")==0&&cons->sht!=0){
@@ -353,7 +354,7 @@ void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
   }else if(strcmp(cmdline,"sugee")==0&&cons->sht!=0){
     cons_putstr0(cons,"sugoine\n");
   }else if(strcmp(cmdline,"exit")==0){
-    cmd_exit(cons,fat);
+    cmd_exit(cons);
   }else if(strn_cmp(cmdline,"start ",6)==0){
     cmd_start(cons,cmdline,memtotal);
   }else if(strn_cmp(cmdline,"ncst ",5)==0){
@@ -365,11 +366,11 @@ void cons_runcmd(CONSOLE *cons,char *cmdline,int *fat,unsigned int memtotal){
   }else if(strcmp(cmdline,"cln")==0){
     cmd_cln(cons);
   }else if(strn_cmp(cmdline,"cat ",4)==0){
-    cmd_cat(cons,fat,cmdline);
+    cmd_cat(cons,cmdline);
   }else if(strn_cmp(cmdline,"cd ",3)==0){
     cmd_cd(cons,cmdline);
   }else if(cmdline[0]!=0){
-    if(cmd_app(cons,fat,cmdline)==0){
+    if(cmd_app(cons,cmdline)==0){
       cons_putstr0(cons,"No such commands :-D");
       cons_newline(cons);
       cons_newline(cons);
@@ -616,7 +617,7 @@ void console_task(SHEET *sheet,unsigned int memtotal){
   MEMMAN *memman = (MEMMAN*)MEMMAN_ADDR;
   FILEHANDLE fhandle[8];
   unsigned char *nihongo = (char*)*((int*)0x0fe8);
-  int info,*fat = (int *)memman_alloc_4k(memman,4*2880);
+  int info;
   char cmdline[30];
   CONSOLE cons;
   cons.sht=sheet;
@@ -645,7 +646,6 @@ void console_task(SHEET *sheet,unsigned int memtotal){
   }
   task->langbyte1=0;
   task->fhandle = fhandle;
-  task->fat = fat;
 
   cons_putchar(&cons,'>',1);
 
@@ -682,7 +682,7 @@ void console_task(SHEET *sheet,unsigned int memtotal){
         cons.cur_c=-1;
       }
       if(info==4){
-        cmd_exit(&cons,fat);
+        cmd_exit(&cons);
       }
       if(256<=info&&info<=511){
         if(info == 8+256){
@@ -694,9 +694,9 @@ void console_task(SHEET *sheet,unsigned int memtotal){
           cons_putchar(&cons,' ',0);
           cmdline[cons.cur_x/8 -2]=0;
           cons_newline(&cons);
-          cons_runcmd(&cons,cmdline,fat,memtotal);
+          cons_runcmd(&cons,cmdline,memtotal);
           if(cons.sht==0){
-            cmd_exit(&cons,fat);
+            cmd_exit(&cons);
           }
           cons_putchar(&cons,'>',1);
         }else{

@@ -175,7 +175,6 @@ struct TASK{
   CONSOLE *cons;
   int ds_base,cons_stack;
   FILEHANDLE *fhandle;
-  int *fat;
   char *cmdline;
   unsigned char langmode,langbyte1;
 };
@@ -211,7 +210,6 @@ typedef struct FILEINFO FILEINFO;
 struct FILEINFO{
   int size,clustno;
   unsigned char name[24];
-  FILEINFO *nextfile;
 };
 
 typedef struct{
@@ -286,12 +284,11 @@ void init_mouse_cursor8(char *mouse, char bc);
 void putblock8_8(char *vram, int vxsize, int pxsize,
   int pysize, int px0, int py0, char *buf, int bxsize);
 
-/* dsctbl.c */
 
 void init_gdtidt(void);
 void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 void set_gatedesc(GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
-/* int.c */
+
 void init_pic(void);
 void inthandler21(int *esp);
 void inthandler27(int *esp);
@@ -362,7 +359,6 @@ int *inthandler0d(int *esp);
 int *inthandler0c(int *esp);
 //file 
 FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
-void file_readfat(int *fat,unsigned char *img);
 void file_loadfile(int clustno,int size,char *buf,char *img);
 char *file_loadfile2(int clustno, int *psize);
 void file_writefile2(int clustno, int *psize,char *buf);

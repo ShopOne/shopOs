@@ -1,7 +1,7 @@
 #include"bootpack.h"
 void file_loadfile(int clustno, int size, char *buf, char *img){
   int i;
-  for (i = 0; i < size; i++) {
+  for (i = 0; i < size; i++){
     buf[i] = img[clustno + i];
   }
   return;
@@ -77,6 +77,20 @@ FILEINFO *write_fileinfo(DIRINFO *now_dir,char *name){
   FILEINFO *newfile = (FILEINFO*)memman_alloc_4k(memman,sizeof(newfile));
 }
 FILEINFO *make_file(DIRINFO *now_dir,char *name){
+  FILEINFO *p,*q;
+  p = now_dir->nextfile;
+  q = 0;
+  if(p==0){
+    now_dir->nextfile = write_fileinfo(now_dir,name);
+    return now_dir->nextfile;
+  }else{
+    while(p!=0){
+      q=p;
+      p=p->nextfile;
+    }
+    q->nextfile = write_fileinfo(now_dir,name);
+    return q->nextfile;
+  }
 }
 void init_files(){
   FILEINFO *finfo = (FILEINFO*)(ADR_DISKIMG+0x000200);

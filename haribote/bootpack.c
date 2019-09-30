@@ -17,7 +17,7 @@ TASK *open_constask(SHEET *sht, unsigned int memtotal){
   task->tss.gs = 1 * 8;
   *((int *) (task->tss.esp + 4)) = (int) sht;
   *((int *) (task->tss.esp + 8)) = memtotal;
-  task_run(task, 2, 2); /* level=2, priority=2 */
+  task_run(task, 2, 2); 
   fifo32_init(&task->fifo, 128, cons_fifo, task);
   return task;
 }
@@ -26,11 +26,11 @@ SHEET *open_console(SHTCTL *shtctl, unsigned int memtotal){
   MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
   SHEET *sht = sheet_alloc(shtctl);
   unsigned char *buf = (unsigned char *) memman_alloc_4k(memman, 256 * 165);
-  sheet_setbuf(sht, buf, 256, 165, -1); /* 透明色なし */
+  sheet_setbuf(sht, buf, 256, 165, -1); 
   make_window8(buf, 256, 165, "console", 0);
   make_textbox8(sht, 8, 28, 240, 128, COL8_000000);
   sht->task = open_constask(sht, memtotal);
-  sht->flags |= 0x20;  /* カーソルあり */
+  sht->flags |= 0x20;  
   return sht;
 }
 
@@ -76,7 +76,6 @@ void HariMain(void){
   int mx,my,info,mo_x,mo_y,mmx=-1,mmy=-1,keycmd_wait=-1,mmx2=0,new_wx=0x7fffffff,new_wy=0;
   int new_mx=-1,new_my=0;
   int key_shift=0,key_leds=(binfo->leds>>4)&7;
-  int *fat;
   unsigned char *nihongo;
   FILEINFO *finfo;
   unsigned char *buf_back,buf_mouse[256];
@@ -85,7 +84,6 @@ void HariMain(void){
   extern char hankaku[4096];
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   int x,y;
-  DIRINFO *homedir;
   static char keytable0[0x80] = {
     0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0x08,   0,
     'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0x0a,   0,   'A', 'S',
@@ -159,8 +157,7 @@ void HariMain(void){
 
   // load japanese
   nihongo = (unsigned char*)memman_alloc_4k(memman,16*256+32*94*47);
-  fat = (int*)memman_alloc_4k(memman,4*2880);
-  finfo = file_search("nihongo.fnt",(FILEINFO*)(ADR_DISKIMG+0x002600),224);
+  finfo = file_search("nihongo.fnt",(FILEINFO*)(ADR_DISKIMG+0x000200),272);
   if(finfo!=0){
     file_loadfile2(finfo->clustno,&finfo->size);
   }else{
@@ -172,15 +169,6 @@ void HariMain(void){
     }
   }
   *((int*)0x0fe8) = (int)nihongo;
-  memman_free_4k(memman,(int)fat,4*2880);
-
-  homedir->parentdir=homedir;
-  homedir->curdir=homedir;
-  homedir->nextdir=0;
-  homedir->name[0]='/';
-  homedir->name[1]=0;
-  homedir->nextfile=0;
-  *((int*)HOMEDIR_ADDR) = (int)homedir;
 
   fifo32_put(&keycmd,KEYCMD_LED);
   fifo32_put(&keycmd,key_leds);
