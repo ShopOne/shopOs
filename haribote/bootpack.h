@@ -206,22 +206,27 @@ typedef struct{
   TASKLEVEL level[MAX_TASKLEVELS];
   TASK tasks0[MAX_TASKS];
 }TASKCTL;
+
 typedef struct FILEINFO FILEINFO;
 struct FILEINFO{
+// DO NOT TOUCH!!!!!
   int size,clustno;
   unsigned char name[24];
 };
 
-typedef struct{
-  int size,addr;
-  unsigned char name[24];
-}FS_FILEINFO;
-typedef struct DIRINFO DIRINFO;
-struct DIRINFO{
-  DIRINFO *parentdir,*curdir,*nextdir;
-  FILEINFO *nextfile;
+typedef struct FILEMAN FILEMAN;
+struct FILEMAN{
+  FILEINFO *nowfile;
+  FILEMAN *nextfile;
+};
+
+typedef struct DIRMAN DIRMAN;
+struct DIRMAN{
+  DIRMAN *parentdir,*curdir,*nextdir;
+  FILEMAN *nextfile;
   unsigned char name[24];
 };
+
 struct CONSOLE{
   SHEET *sht;
   int cur_x,cur_y,cur_c;

@@ -365,8 +365,6 @@ void cons_runcmd(CONSOLE *cons,char *cmdline,unsigned int memtotal){
     cmd_pwd(cons);
   }else if(strcmp(cmdline,"cln")==0){
     cmd_cln(cons);
-  }else if(strn_cmp(cmdline,"cat ",4)==0){
-    cmd_cat(cons,cmdline);
   }else if(strn_cmp(cmdline,"cd ",3)==0){
     cmd_cd(cons,cmdline);
   }else if(cmdline[0]!=0){
