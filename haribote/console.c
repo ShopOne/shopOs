@@ -91,7 +91,7 @@ void cons_newline(CONSOLE *cons){
   return;
 }
 void cmd_pwd(CONSOLE *cons){
-  cons_putstr0(cons,cons->cur_dir);
+  cons_putstr0(cons,cons->cur_dir->name);
   cons_newline(cons);
 }
 int cmd_app(CONSOLE *cons,char *cmdline){
@@ -288,17 +288,19 @@ void cmd_clean(CONSOLE *cons){
 
 void cmd_ls(CONSOLE *cons){
   FILEINFO *finfo = (FILEINFO*)(ADR_DISKIMG+0x000200);
+  DIRMAN *now_dir = cons->cur_dir;
   char s[31];
-  for(int i=0;i<272;i++){
-    if(finfo[i].size==-1){
-      break;
-    }
-    my_sprintf(s, "                      %d\n", finfo[i].size);
+  for(int i=0;i<now_dir->next_dnum;i++){
+    cons_putstr0(cons,now_dir->nextfiles[i]->name);
+    cons_putstr0(cons,"\n");
+  }
+  for(int i=0;i<now_dir->next_fnum;i++){
+    my_sprintf(s, "                      %d\n", now_dir->nextfiles[i]->size);
     for(int j=0;j<24;j++){
       if(finfo[i].name[j]==0){
         break;
       }
-      s[j]=finfo[i].name[j];
+      s[j]=now_dir->nextfiles[i]->name[j];
     }
     cons_putstr0(cons,s);
   }
@@ -339,7 +341,6 @@ void cmd_cd(CONSOLE *cons,char *cmdline){
   char *next_dir = cmdline+3;
   if(next_dir[0]=='/'){
     next_dir++;
-    cons->cur_dir=next_dir;
     cons->curdir_nsize = str_len(next_dir);
   }else{
   }
@@ -622,9 +623,7 @@ void console_task(SHEET *sheet,unsigned int memtotal){
   cons.cur_x=8;
   cons.cur_y=28;
   cons.cur_c=-1;
-  cons.cur_dir = (char*)memman_alloc_4k(memman,30);
-  cons.cur_dir[0]='/';
-  cons.cur_dir[1]=0;
+  cons.cur_dir=(DIRMAN*)*((int*)HOMEDIR_ADDR);
   cons.curdir_nsize=1;
   task->cons = &cons;
   task->cmdline = cmdline;

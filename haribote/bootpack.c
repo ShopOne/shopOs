@@ -80,7 +80,7 @@ void HariMain(void){
   FILEINFO *finfo;
   unsigned char *buf_back,buf_mouse[256];
   SHEET *sht_back,*sht_mouse,*sht=0,*key_win,*sht2;
-  TASK *task_a,*task;
+  TASK *task_a,*task,*fdc_task;
   extern char hankaku[4096];
   MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
   int x,y;
@@ -108,6 +108,7 @@ void HariMain(void){
   init_pic();
   io_sti();
   init_pit();
+  init_files();
   fifo32_init(&fifo,128,fifo_buf,0);
   *((int*)(0x0fec)) = (int)&fifo;
   init_keyboard(&fifo,256);
@@ -141,7 +142,7 @@ void HariMain(void){
   //mouse init
   sht_mouse = sheet_alloc(shtctl);
   sheet_setbuf(sht_mouse,buf_mouse,16,16,COL8_008484);
-  init_mouse_cursor8(buf_mouse,COL8_008484);
+  init_mouse_cursor8((char*)buf_mouse,COL8_008484);
   mx = (binfo->scrnx-16)/2;
   my = (binfo->scrny-28-16)/2;
   mo_x = mx*MOUSE_MV_RATE;
@@ -157,7 +158,13 @@ void HariMain(void){
 
   // load japanese
   nihongo = (unsigned char*)memman_alloc_4k(memman,16*256+32*94*47);
-  finfo = file_search("nihongo.fnt",(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+  finfo = file_search("nihongo.fnt"
+      ,(FILEINFO*)(ADR_DISKIMG+0x000200),272);
+  /*
+   FIXME
+  fdc_task = task_init(memman);
+  task_run(fdc_task,0,0);
+  */
   if(finfo!=0){
     file_loadfile2(finfo->clustno,&finfo->size);
   }else{

@@ -89,6 +89,10 @@ int str_len(const char* s);
 #define MAX_TASK_LV 100
 #define MAX_TASKLEVELS 10
 
+//filename
+#define MAX_DIR 100
+#define MAX_FILE 100
+
 
 #define HOMEDIR_ADDR 0x0fac
 // structs
@@ -166,6 +170,7 @@ typedef struct{
   int size;
   int pos;
 }FILEHANDLE;
+
 struct TASK{
   int sel, flags;
   int level,priority;
@@ -214,16 +219,11 @@ struct FILEINFO{
   unsigned char name[24];
 };
 
-typedef struct FILEMAN FILEMAN;
-struct FILEMAN{
-  FILEINFO *nowfile;
-  FILEMAN *nextfile;
-};
-
 typedef struct DIRMAN DIRMAN;
 struct DIRMAN{
-  DIRMAN *parentdir,*curdir,*nextdir;
-  FILEMAN *nextfile;
+  DIRMAN *parentdir,*curdir,*nextdirs[100];
+  FILEINFO *nextfile,*nextfiles[100];
+  unsigned int next_dnum,next_fnum;
   unsigned char name[24];
 };
 
@@ -231,17 +231,19 @@ struct CONSOLE{
   SHEET *sht;
   int cur_x,cur_y,cur_c;
   TIMER *timer;
-  char *cur_dir;
+  DIRMAN *cur_dir;
   unsigned int curdir_nsize;
 };
 
 // global
 FIFO32 *key_fifo;
 FIFO32 *mouse_fifo;
+FIFO32 *fdc_fifo;
 TIMERCTL timectl;
 TASKCTL *taskctl;
 TIMER *mt_timer;
 TIMER *task_timer;
+DIRMAN *homedir;
 int mt_tr;
 int keydata0;
 int mousedata0;
@@ -367,6 +369,10 @@ FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
 void file_loadfile(int clustno,int size,char *buf,char *img);
 char *file_loadfile2(int clustno, int *psize);
 void file_writefile2(int clustno, int *psize,char *buf);
+void init_files();
 //bootpack
 SHEET *open_console(SHTCTL *shtctl,unsigned int memtotal);
 TASK *open_constask(SHEET *sht,unsigned int memtotal);
+
+//fdc
+void dmac_task();

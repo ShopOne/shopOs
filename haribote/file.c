@@ -58,63 +58,47 @@ DIRMAN* newdir_init(DIRMAN *parent_dir,DIRMAN *next_dir,char *name){
   DIRMAN *new_dir = (DIRMAN*)memman_alloc_4k(memman,sizeof(DIRMAN));
   new_dir->parentdir=parent_dir;
   new_dir->curdir = new_dir;
-  new_dir->nextdir = next_dir;
+  new_dir->next_dnum = 0;
+  new_dir->next_fnum = 0;
   for(int i=0;name[i]!=0;i++){
     new_dir->name[i]=name[i];
   }
   return new_dir;
 }
 DIRMAN* make_dir(DIRMAN *now_dir,char* dname){
-  DIRMAN *p,*q;
-  p = now_dir->nextdir;
-  q = 0;
-  // ディレクトリ内にディレクトリが自分しかいない
-  if(p==0){
-    q=now_dir;
+  if(now_dir->next_dnum<MAX_DIR){
+    return now_dir->nextdirs[now_dir->next_dnum++] = newdir_init(now_dir,0,dname);
   }else{
-    while(p!=0){
-      q=p;
-      p=p->nextdir;
-    }
+    return 0;
   }
-  q->nextdir=newdir_init(now_dir,0,dname);
-  return q->nextdir;
 }
 DIRMAN *search_dir(DIRMAN *now_dir,char *name){
-  while(now_dir!=0){
-    if(strcmp(now_dir->name,name)==0){
+  for(int i=0;i<now_dir->next_dnum;i++){
+    if(strcmp(now_dir->nextfiles[i]->name,name)==0){
       return now_dir;
     }
   }
   return 0;
 }
-FILEINFO *write_fileinfo(DIRMAN *now_dir,char *name){
-  MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
-  FILEINFO *newfile = (FILEINFO*)memman_alloc_4k(memman,sizeof(newfile));
-}
-FILEMAN *make_file(DIRMAN *nowdir,char *name){
-  FILEMAN *p,*q,*new_fileman;
-  MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
-  FILEINFO *newfile = (FILEINFO*)memman_alloc_4k(memman,sizeof(newfile));
-  new_fileman = (FILEMAN*)memman_alloc_4k(memman,sizeof(new_fileman));
-  p = nowdir->nextfile;
-  q = p->nextfile;
-  while(q!=0){
-    p = p->nextfile;
-    q = q->nextfile;
-  }
-}
 void init_files(){
   FILEINFO *finfo = (FILEINFO*)(ADR_DISKIMG+0x000200);
   char s[31];
   // 親ディレクトリ
-  DIRMAN *now_dir = (DIRMAN*)*((int*)HOMEDIR_ADDR);
+  MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
+  DIRMAN *home_dir = (DIRMAN*)*((int*)HOMEDIR_ADDR),*now_dir;
+  home_dir = (DIRMAN*)memman_alloc_4k(memman,sizeof(home_dir));
+  home_dir->name[0]='/';
+  home_dir->name[1]=0;
+  home_dir->next_fnum=0;
+  home_dir->next_dnum=0;
   DIRMAN *tmp_dir;
+  int sj;
   for(int i=0;i<272;i++){
     if(finfo[i].size==-1){
       break;
     }
-    for(int j=0;j<31;j++){
+    now_dir = home_dir;
+    for(int j=0,sj=0;j<31;j++,sj++){
       if(finfo[i].name[j]==0){
         break;
       }
@@ -127,7 +111,12 @@ void init_files(){
         }else{
           now_dir = tmp_dir;
         }
+        s[0]=0;
+        sj=-1;
       }
+    }
+    if(now_dir->next_fnum<MAX_FILE){
+      now_dir->nextfiles[now_dir->next_fnum++] = finfo;
     }
   }
   return;
